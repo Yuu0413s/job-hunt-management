@@ -7,7 +7,11 @@
 	"types": "src/index.ts",
 	"scripts": {
 		"deploy": "wrangler deploy",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:studio": "drizzle-kit studio",
+		"db:seed": "bun run src/db/seed.ts"
 	},
 	"dependencies": {
 		"@job-hunt/shared": "workspace:*",
