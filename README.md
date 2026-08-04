@@ -65,11 +65,17 @@ Cloudflare Workers Builds が GitHub リポジトリと連携しており、以�
 
 | 項目 | 値 |
 |---|---|
-| Build command | `bun install && bun run build` |
-| Deploy command | `bunx wrangler deploy --config apps/api/wrangler.jsonc` |
+| Root directory | `apps/api` |
+| Build command | `bun install && bun run --filter '@job-hunt/web' build` |
+| Deploy command | `bunx wrangler deploy` |
 
-`apps/web` のビルド成果物（`apps/web/dist`）を `apps/api` が Workers Static Assets として配信するため、
-必ず web のビルド → api のデプロイの順で実行する（Deploy commandは `apps/web` のビルドを含まない）。
+Root directory を `apps/api` にすることで、`wrangler` が `apps/api/wrangler.jsonc` を自動的に見つけられるようにしている。
+`bun run --filter` はモノレポのどのディレクトリから実行しても workspace root を自動検出するため、
+Root directory が `apps/api` でも `apps/web` のビルドが実行できる。
+
+PRのプレビューデプロイでは、Deploy commandの設定に関わらず Cloudflare が内部的に `wrangler versions upload` を実行する
+（本番デプロイ時のみカスタムDeploy commandが使われる）。そのため、Root directory を正しく設定し、
+どちらのコマンドを実行してもconfigが解決できる状態にしておく必要がある。
 
 ### シークレット
 
