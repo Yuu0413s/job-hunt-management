@@ -15,8 +15,8 @@ if (!databaseUrl) {
 const SEED_USER_ID = "seed-user";
 const SEED_COMPANY_NAME = "動作確認用シード株式会社";
 
-async function main() {
-	const sql = neon(databaseUrl as string);
+async function main(databaseUrl: string) {
+	const sql = neon(databaseUrl);
 	const db = drizzle(sql, { schema, casing: "snake_case" });
 
 	const existing = await db
@@ -47,4 +47,7 @@ async function main() {
 	console.log("シードデータを投入しました:", inserted);
 }
 
-main();
+main(databaseUrl).catch((error) => {
+	console.error("シードデータの投入に失敗しました:", error);
+	process.exit(1);
+});
