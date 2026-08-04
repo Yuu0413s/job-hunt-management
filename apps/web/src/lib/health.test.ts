@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { fetchHealth } from "./health";
 
+let fetchSpy: ReturnType<typeof spyOn<typeof globalThis, "fetch">> | undefined;
+
 function mockFetch(response: Response) {
-	return spyOn(globalThis, "fetch").mockResolvedValue(response);
+	fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(response);
 }
 
 describe("fetchHealth", () => {
 	afterEach(() => {
-		(
-			globalThis.fetch as unknown as { mockRestore?: () => void }
-		).mockRestore?.();
+		fetchSpy?.mockRestore();
 	});
 
 	test("正常系: 200 のとき { status: string } を返す", async () => {
@@ -32,5 +32,21 @@ describe("fetchHealth", () => {
 		mockFetch(new Response("not-json", { status: 200 }));
 
 		await expect(fetchHealth()).rejects.toThrow();
+	});
+
+	test("境界値: status を含まないJSONのとき例外を投げる", async () => {
+		mockFetch(new Response(JSON.stringify({}), { status: 200 }));
+
+		await expect(fetchHealth()).rejects.toThrow(
+			"/api/health のレスポンス形式が不正です",
+		);
+	});
+
+	test("境界値: status が string 以外のとき例外を投げる", async () => {
+		mockFetch(new Response(JSON.stringify({ status: 123 }), { status: 200 }));
+
+		await expect(fetchHealth()).rejects.toThrow(
+			"/api/health のレスポンス形式が不正です",
+		);
 	});
 });
