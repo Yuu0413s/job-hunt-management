@@ -1,0 +1,12 @@
+{
+	"name": "@job-hunt/api",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@job-hunt/shared": "workspace:*"
+	}
+}
