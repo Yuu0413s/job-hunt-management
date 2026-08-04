@@ -26,5 +26,7 @@ gh issue develop <Issue番号> --checkout
 
 - `main` への直接 push は禁止（ブランチ保護ルールにより拒否される）
 - 変更は必ず Pull Request 経由で `main` にマージする
+- CI（Lint / Type Check / Test）の通過を必須とする
+- レビュー承認は不要（1人開発のため）
 - マージ方式は Squash merge のみ
 - マージ後、ブランチは自動的に削除される
