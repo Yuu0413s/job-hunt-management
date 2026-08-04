@@ -16,7 +16,8 @@ app.get("/api/health/db", async (c) => {
 		const sql = neon(c.env.DATABASE_URL);
 		await sql`SELECT 1`;
 		return c.json({ status: "ok" });
-	} catch {
+	} catch (error) {
+		console.error("DB health check failed:", error);
 		return c.json({ status: "error" }, 500);
 	}
 });
