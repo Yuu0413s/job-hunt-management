@@ -9,6 +9,7 @@
 		"build": "bun run --filter '@job-hunt/web' build",
 		"deploy": "bun run build && bun run --filter '@job-hunt/api' deploy",
 		"lint": "biome check .",
+		"format": "biome format --write .",
 		"typecheck": "bun run --filter '*' typecheck",
 		"test": "bun test"
 	},
