@@ -1,0 +1,53 @@
+name: "\U0001F680 機能追加"
+description: 新しい機能や画面を追加する
+title: "[Feature] "
+labels:
+  - "type:feature"
+body:
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 目的
+      description: なぜこの機能が必要か。誰のどんな課題を解決するか。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 領域
+      description: この機能が主に関わる領域を選択してください。
+      options:
+        - api
+        - web
+        - db
+        - infra
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 作業内容
+      description: チェックリスト形式で作業項目を書いてください。
+      placeholder: |
+        - [ ] やること1
+        - [ ] やること2
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 完了条件
+      description: 何ができれば「完了」と言えるか。
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補足
+      description: 参考リンク、設計メモ、懸念点など（任意）。
+    validations:
+      required: false
