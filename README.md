@@ -2,6 +2,23 @@
 
 就活管理アプリ
 
+## セットアップ
+
+`apps/api` は Workers Static Assets で `apps/web` のビルド成果物（`apps/web/dist`）を
+配信する構成になっている。そのため `apps/api` で `wrangler dev` / `wrangler deploy` を
+実行する前に、必ず一度 `apps/web` をビルドしておく必要がある。
+
+```bash
+bun install
+bun run build   # apps/web を apps/web/dist にビルド
+
+cd apps/api
+bunx wrangler dev
+```
+
+`apps/web/dist` が存在しない状態で `wrangler dev` を実行すると、
+`assets.directory` が見つからないというエラーで起動に失敗する。
+
 ## 開発フロー
 
 ### ブランチ運用
