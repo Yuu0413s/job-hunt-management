@@ -1,7 +1,9 @@
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
-config({ path: ".dev.vars", quiet: true });
+// override を付けないと、シェルに残った別の DATABASE_URL（本番の値など）が
+// 優先されてしまい、意図しない接続先に generate/migrate/studio してしまう恐れがある。
+config({ path: ".dev.vars", quiet: true, override: true });
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
