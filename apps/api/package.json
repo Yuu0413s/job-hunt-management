@@ -9,6 +9,10 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@job-hunt/shared": "workspace:*"
+		"@job-hunt/shared": "workspace:*",
+		"hono": "^4.13.0"
+	},
+	"devDependencies": {
+		"wrangler": "^4.118.0"
 	}
 }
