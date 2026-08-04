@@ -53,3 +53,31 @@ gh issue develop 46 --name chore/46-branch-protection --checkout
 - レビュー承認は不要（1人開発のため）
 - マージ方式は Merge commit のみ
 - マージ後、ブランチは自動的に削除される
+
+## デプロイ
+
+Cloudflare Workers Builds が GitHub リポジトリと連携しており、以下のタイミングで自動的にビルド・デプロイが実行される。
+
+- `main` への push → 本番環境へデプロイ
+- PR の作成・更新 → プレビュー環境へデプロイし、PR にプレビューURLが発行される
+
+### ビルド設定（Cloudflareダッシュボード側）
+
+| 項目 | 値 |
+|---|---|
+| Root directory | `apps/api` |
+| Build command | `bun install && bun run --filter '@job-hunt/web' build` |
+| Deploy command | `bunx wrangler deploy` |
+
+Root directory を `apps/api` にすることで、`wrangler` が `apps/api/wrangler.jsonc` を自動的に見つけられるようにしている。
+`bun run --filter` はモノレポのどのディレクトリから実行しても workspace root を自動検出するため、
+Root directory が `apps/api` でも `apps/web` のビルドが実行できる。
+
+PRのプレビューデプロイでは、Deploy commandの設定に関わらず Cloudflare が内部的に `wrangler versions upload` を実行する
+（本番デプロイ時のみカスタムDeploy commandが使われる）。そのため、Root directory を正しく設定し、
+どちらのコマンドを実行してもconfigが解決できる状態にしておく必要がある。
+
+### シークレット
+
+本番用の環境変数（`DATABASE_URL` など）は Cloudflareダッシュボードの Worker設定、
+または `wrangler secret put <名前>` で登録する。`.env` 等でリポジトリに含めない。
