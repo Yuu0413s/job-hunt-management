@@ -53,3 +53,25 @@ gh issue develop 46 --name chore/46-branch-protection --checkout
 - レビュー承認は不要（1人開発のため）
 - マージ方式は Merge commit のみ
 - マージ後、ブランチは自動的に削除される
+
+## デプロイ
+
+Cloudflare Workers Builds が GitHub リポジトリと連携しており、以下のタイミングで自動的にビルド・デプロイが実行される。
+
+- `main` への push → 本番環境へデプロイ
+- PR の作成・更新 → プレビュー環境へデプロイし、PR にプレビューURLが発行される
+
+### ビルド設定（Cloudflareダッシュボード側）
+
+| 項目 | 値 |
+|---|---|
+| Build command | `bun install && bun run build` |
+| Deploy command | `bunx wrangler deploy --config apps/api/wrangler.jsonc` |
+
+`apps/web` のビルド成果物（`apps/web/dist`）を `apps/api` が Workers Static Assets として配信するため、
+必ず web のビルド → api のデプロイの順で実行する（Deploy commandは `apps/web` のビルドを含まない）。
+
+### シークレット
+
+本番用の環境変数（`DATABASE_URL` など）は Cloudflareダッシュボードの Worker設定、
+または `wrangler secret put <名前>` で登録する。`.env` 等でリポジトリに含めない。
