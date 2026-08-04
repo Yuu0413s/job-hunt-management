@@ -1,6 +1,45 @@
 # job-hunt-management
 
-就活管理アプリ
+就活の選考状況（応募企業・選考ステータス・面接や説明会の予定・提出書類）を一元管理するための個人向け就活管理アプリ。
+スプレッドシートで管理していた就活状況を、検索・フィルタ・インライン編集ができるWebアプリに置き換えることを目的にしている。
+
+## 技術スタック
+
+| 領域 | 技術 | 選定理由 |
+|---|---|---|
+| ランタイム / ホスティング | Cloudflare Workers | Workers Static Assets を使うと、フロントの静的ファイル配信とAPIを同一Workerにまとめられる。個人開発でインフラを1つに集約し、運用コストを下げるために選んだ |
+| モノレポ管理 | bun workspaces | パッケージマネージャとJSランタイムを1つで完結でき、インストール・実行が速い |
+| API | Hono | Cloudflare Workers上で動く軽量なWebフレームワーク。Web標準の Request/Response に準拠しており、Workersとの相性がよい |
+| DB | Neon（Serverless Postgres） | HTTP経由で接続できるため、Cloudflare Workersのようなエッジ環境からも利用できる。無料枠があり個人開発に向いている |
+| ORM | Drizzle ORM | SQLに近い書き方で型安全にクエリを書ける。マイグレーションもコードで管理できる |
+| フロント | React 19 + Vite | Viteのビルド速度と、Reactのエコシステムの広さを優先した標準的な構成 |
+| ルーティング | TanStack Router | 型安全なルーティングができ、ルート定義から型（`routeTree.gen.ts`）を自動生成してくれる |
+| データフェッチ | TanStack Query | サーバー状態のキャッシュ・再検証をまとめて任せられる |
+| スタイリング | Tailwind CSS | ユーティリティクラスでスタイルをコンポーネント側に閉じ込められる |
+| Lint / Format | Biome | ESLint + Prettier相当の機能を1ツール・高速に実行できる |
+
+## アーキテクチャ
+
+`apps/api` が Cloudflare Workers 上で動く唯一のWorkerで、APIとフロントの静的ファイル配信を1つにまとめている。
+`apps/web` はビルドすると静的ファイル（`apps/web/dist`）になり、`apps/api` の Workers Static Assets 機能がそれを配信する。
+
+```
+                ブラウザ
+                   │
+                   ▼
+  ┌───────────────────────────────────┐
+  │   Cloudflare Workers（apps/api）    │
+  │                                     │
+  │   /api/*   → Hono がAPIとして処理    │
+  │   それ以外  → Workers Static Assets  │
+  │              が apps/web/dist を配信 │
+  └──────────────────┬──────────────────┘
+                      │
+                      ▼
+               Neon（Postgres）
+```
+
+`packages/shared` は `apps/api` と `apps/web` の両方から参照する共有コード（型など）を置く場所。
 
 ## セットアップ
 
@@ -18,6 +57,15 @@ bunx wrangler dev
 
 `apps/web/dist` が存在しない状態で `wrangler dev` を実行すると、
 `assets.directory` が見つからないというエラーで起動に失敗する。
+
+## 環境変数
+
+値はリポジトリに含めない。ローカルでは `apps/api/.dev.vars`（gitignore対象）に、
+本番ではCloudflareダッシュボードの Worker設定または `wrangler secret put` で設定する。
+
+| 変数名 | 用途 |
+|---|---|
+| `DATABASE_URL` | Neon（Postgres）への接続文字列 |
 
 ## 開発フロー
 
