@@ -17,3 +17,23 @@ describe("未定義のルート", () => {
 		expect(res.status).toBe(404);
 	});
 });
+
+describe("GET /api/health/db", () => {
+	test('DATABASE_URL が不正な形式の場合、500 と { status: "error" } を返す', async () => {
+		const res = await app.request(
+			"/api/health/db",
+			{},
+			{ DATABASE_URL: "not-a-valid-connection-string" },
+		);
+
+		expect(res.status).toBe(500);
+		expect(await res.json()).toEqual({ status: "error" });
+	});
+
+	test('DATABASE_URL が空文字の場合、500 と { status: "error" } を返す', async () => {
+		const res = await app.request("/api/health/db", {}, { DATABASE_URL: "" });
+
+		expect(res.status).toBe(500);
+		expect(await res.json()).toEqual({ status: "error" });
+	});
+});
