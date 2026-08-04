@@ -1,9 +1,11 @@
 import { config } from "dotenv";
 
-config({ path: ".dev.vars", quiet: true });
+// シードスクリプトは常に .dev.vars の値で実行したい。
+// override を付けないと、シェルに残った別の DATABASE_URL（本番の値など）が
+// 優先されてしまい、意図しない接続先に migrate/seed してしまう恐れがある。
+config({ path: ".dev.vars", quiet: true, override: true });
 
 import { neon } from "@neondatabase/serverless";
-import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
@@ -12,6 +14,7 @@ if (!databaseUrl) {
 	throw new Error("DATABASE_URL is required. Check apps/api/.dev.vars.");
 }
 
+const SEED_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
 const SEED_USER_ID = "seed-user";
 const SEED_COMPANY_NAME = "動作確認用シード株式会社";
 
@@ -19,32 +22,23 @@ async function main(databaseUrl: string) {
 	const sql = neon(databaseUrl);
 	const db = drizzle(sql, { schema, casing: "snake_case" });
 
-	const existing = await db
-		.select({ id: schema.companies.id })
-		.from(schema.companies)
-		.where(
-			and(
-				eq(schema.companies.userId, SEED_USER_ID),
-				eq(schema.companies.name, SEED_COMPANY_NAME),
-			),
-		)
-		.limit(1);
-
-	const [existingCompany] = existing;
-	if (existingCompany) {
-		console.log("シードデータは既に存在します:", existingCompany.id);
-		return;
-	}
-
+	// 存在確認とinsertを1つのSQL文にまとめることで、同時実行時に
+	// 重複投入されるレース条件（TOCTOU）を避ける。
 	const [inserted] = await db
 		.insert(schema.companies)
 		.values({
+			id: SEED_COMPANY_ID,
 			userId: SEED_USER_ID,
 			name: SEED_COMPANY_NAME,
 		})
+		.onConflictDoNothing({ target: schema.companies.id })
 		.returning();
 
-	console.log("シードデータを投入しました:", inserted);
+	if (inserted) {
+		console.log("シードデータを投入しました:", inserted);
+	} else {
+		console.log("シードデータは既に存在します:", SEED_COMPANY_ID);
+	}
 }
 
 main(databaseUrl).catch((error) => {
