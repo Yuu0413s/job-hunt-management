@@ -1,0 +1,48 @@
+name: "\U0001F41B バグ報告"
+description: 不具合を報告する
+title: "[Bug] "
+labels:
+  - "type:bug"
+body:
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 発生手順
+      description: バグを再現する手順を順番に書いてください。
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 期待する挙動
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: 実際の挙動
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 環境
+      description: OS、ブラウザ、デバイスなど。
+      placeholder: 例）macOS 15 / Chrome 140
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: スクリーンショット
+      description: 該当する場合は画像を貼り付けてください（任意）。
+    validations:
+      required: false

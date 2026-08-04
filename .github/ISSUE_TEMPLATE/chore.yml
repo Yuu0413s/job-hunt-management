@@ -1,0 +1,32 @@
+name: "\U0001F527 設定・雑務"
+description: 設定変更や雑務など、機能追加・バグ修正以外の作業
+title: "[Chore] "
+labels:
+  - "type:chore"
+body:
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 目的
+      description: なぜこの作業が必要か。
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 作業内容
+      description: チェックリスト形式で作業項目を書いてください。
+      placeholder: |
+        - [ ] やること1
+        - [ ] やること2
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 完了条件
+      description: 何ができれば「完了」と言えるか。
+    validations:
+      required: true
