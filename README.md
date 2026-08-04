@@ -7,11 +7,6 @@
 ### ブランチ運用
 
 作業は必ず GitHub Issue に紐づけ、Issue からブランチを作成する。
-
-```bash
-gh issue develop <Issue番号> --checkout
-```
-
 ブランチ名は `<type>/<Issue番号>-<内容>` の形式にする。
 
 | type | 用途 |
@@ -20,7 +15,18 @@ gh issue develop <Issue番号> --checkout
 | `fix/` | 不具合の修正 |
 | `chore/` | 設定変更・雑務など |
 
-例: `feature/12-user-registration` / `fix/30-login-error` / `chore/46-branch-protection`
+`gh issue develop` は `--name` を指定しないと Issue タイトルから自動生成された
+ブランチ名になり、上記の命名規則と一致しない。**必ず `--name` を指定する。**
+
+```bash
+gh issue develop <Issue番号> --name <type>/<Issue番号>-<内容> --checkout
+```
+
+例:
+
+```bash
+gh issue develop 46 --name chore/46-branch-protection --checkout
+```
 
 ### PR・マージ
 
