@@ -14,7 +14,8 @@ CREATE TABLE "applications" (
 	"applied_at" timestamp,
 	"closed_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "applications_id_user_id_unique" UNIQUE("id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "companies" (
@@ -25,7 +26,8 @@ CREATE TABLE "companies" (
 	"homepage_url" text,
 	"memo" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "companies_id_user_id_unique" UNIQUE("id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "documents" (
@@ -49,8 +51,11 @@ CREATE TABLE "events" (
 	"memo" text
 );
 --> statement-breakpoint
-ALTER TABLE "applications" ADD CONSTRAINT "applications_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "documents" ADD CONSTRAINT "documents_application_id_applications_id_fk" FOREIGN KEY ("application_id") REFERENCES "public"."applications"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "events" ADD CONSTRAINT "events_application_id_applications_id_fk" FOREIGN KEY ("application_id") REFERENCES "public"."applications"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "applications" ADD CONSTRAINT "applications_company_id_user_id_companies_id_user_id_fk" FOREIGN KEY ("company_id","user_id") REFERENCES "public"."companies"("id","user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "documents" ADD CONSTRAINT "documents_application_id_user_id_applications_id_user_id_fk" FOREIGN KEY ("application_id","user_id") REFERENCES "public"."applications"("id","user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "events" ADD CONSTRAINT "events_application_id_user_id_applications_id_user_id_fk" FOREIGN KEY ("application_id","user_id") REFERENCES "public"."applications"("id","user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "applications_user_id_status_idx" ON "applications" USING btree ("user_id","status");--> statement-breakpoint
-CREATE INDEX "events_user_id_scheduled_at_idx" ON "events" USING btree ("user_id","scheduled_at");
+CREATE INDEX "applications_company_id_idx" ON "applications" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "documents_application_id_idx" ON "documents" USING btree ("application_id");--> statement-breakpoint
+CREATE INDEX "events_user_id_scheduled_at_idx" ON "events" USING btree ("user_id","scheduled_at");--> statement-breakpoint
+CREATE INDEX "events_application_id_idx" ON "events" USING btree ("application_id");

@@ -1,5 +1,5 @@
 {
-  "id": "90f4bd90-917c-4caa-aedd-e6e0b74be649",
+  "id": "5f274596-99ed-4eb5-bbea-b286794478cb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -111,25 +111,51 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "applications_company_id_idx": {
+          "name": "applications_company_id_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "applications_company_id_companies_id_fk": {
-          "name": "applications_company_id_companies_id_fk",
+        "applications_company_id_user_id_companies_id_user_id_fk": {
+          "name": "applications_company_id_user_id_companies_id_user_id_fk",
           "tableFrom": "applications",
           "tableTo": "companies",
           "columnsFrom": [
-            "company_id"
+            "company_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "applications_id_user_id_unique": {
+          "name": "applications_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -193,7 +219,16 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "companies_id_user_id_unique": {
+          "name": "companies_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -246,17 +281,35 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "documents_application_id_idx": {
+          "name": "documents_application_id_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "documents_application_id_applications_id_fk": {
-          "name": "documents_application_id_applications_id_fk",
+        "documents_application_id_user_id_applications_id_user_id_fk": {
+          "name": "documents_application_id_user_id_applications_id_user_id_fk",
           "tableFrom": "documents",
           "tableTo": "applications",
           "columnsFrom": [
-            "application_id"
+            "application_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -343,18 +396,35 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "events_application_id_idx": {
+          "name": "events_application_id_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "events_application_id_applications_id_fk": {
-          "name": "events_application_id_applications_id_fk",
+        "events_application_id_user_id_applications_id_user_id_fk": {
+          "name": "events_application_id_user_id_applications_id_user_id_fk",
           "tableFrom": "events",
           "tableTo": "applications",
           "columnsFrom": [
-            "application_id"
+            "application_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"

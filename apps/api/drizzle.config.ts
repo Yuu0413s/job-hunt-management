@@ -3,6 +3,11 @@ import { defineConfig } from "drizzle-kit";
 
 config({ path: ".dev.vars", quiet: true });
 
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+	throw new Error("DATABASE_URL is required. Check apps/api/.dev.vars.");
+}
+
 export default defineConfig({
 	schema: "./src/db/schema.ts",
 	out: "./drizzle",
@@ -12,6 +17,6 @@ export default defineConfig({
 	// 生成されるSQLのカラム名がここで作ったテーブルと一致しなくなる。
 	casing: "snake_case",
 	dbCredentials: {
-		url: process.env.DATABASE_URL as string,
+		url: databaseUrl,
 	},
 });

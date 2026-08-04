@@ -20,10 +20,12 @@ function findColumn(columns: AnyPgColumn[], name: string) {
 	return column;
 }
 
-function firstForeignKey(foreignKeys: ForeignKey[]) {
-	const fk = foreignKeys[0];
+function findForeignKeyTo(foreignKeys: ForeignKey[], foreignTable: unknown) {
+	const fk = foreignKeys.find(
+		(f) => f.reference().foreignTable === foreignTable,
+	);
 	if (!fk) {
-		throw new Error("foreign key not found");
+		throw new Error("matching foreign key not found");
 	}
 	return fk;
 }
@@ -75,7 +77,7 @@ describe("全テーブル共通", () => {
 });
 
 describe("companies テーブル", () => {
-	const { columns } = getTableConfig(companies);
+	const { columns, uniqueConstraints } = getTableConfig(companies);
 
 	test("name は NOT NULL", () => {
 		expect(findColumn(columns, "name").notNull).toBe(true);
@@ -91,18 +93,37 @@ describe("companies テーブル", () => {
 		expect(findColumn(columns, "createdAt").notNull).toBe(true);
 		expect(findColumn(columns, "updatedAt").notNull).toBe(true);
 	});
+
+	test("(id, userId) の複合UNIQUE制約を持つ（子テーブルの複合FKの参照先になる）", () => {
+		const uc = uniqueConstraints.find(
+			(u) => u.name === "companies_id_user_id_unique",
+		);
+
+		expect(uc).toBeDefined();
+		expect(uc?.columns.map((c) => c.name)).toEqual(["id", "userId"]);
+	});
 });
 
 describe("applications テーブル", () => {
-	const { columns, indexes, foreignKeys } = getTableConfig(applications);
+	const { columns, indexes, foreignKeys, uniqueConstraints } =
+		getTableConfig(applications);
 
-	test("companyId は companies.id への外部キー（削除時cascade）", () => {
-		const fk = firstForeignKey(foreignKeys);
+	test("companyId + userId の複合外部キーで companies を参照する（削除時cascade）", () => {
+		const fk = findForeignKeyTo(foreignKeys, companies);
 		const ref = fk.reference();
 
-		expect(ref.foreignTable).toBe(companies);
-		expect(ref.columns.map((c) => c.name)).toEqual(["companyId"]);
+		expect(ref.columns.map((c) => c.name)).toEqual(["companyId", "userId"]);
+		expect(ref.foreignColumns.map((c) => c.name)).toEqual(["id", "userId"]);
 		expect(fk.onDelete).toBe("cascade");
+	});
+
+	test("(id, userId) の複合UNIQUE制約を持つ（events/documentsの複合FKの参照先になる）", () => {
+		const uc = uniqueConstraints.find(
+			(u) => u.name === "applications_id_user_id_unique",
+		);
+
+		expect(uc).toBeDefined();
+		expect(uc?.columns.map((c) => c.name)).toEqual(["id", "userId"]);
 	});
 
 	test("type / status / priority は NOT NULL、closeReason は NULL 許容", () => {
@@ -133,17 +154,28 @@ describe("applications テーブル", () => {
 			"status",
 		]);
 	});
+
+	test("companyId のインデックスを持つ（FK・cascade削除の検索性能のため）", () => {
+		const index = indexes.find(
+			(i) => i.config.name === "applications_company_id_idx",
+		);
+
+		expect(index).toBeDefined();
+		expect(index?.config.columns.map((c) => (c as AnyPgColumn).name)).toEqual([
+			"companyId",
+		]);
+	});
 });
 
 describe("events テーブル", () => {
 	const { columns, indexes, foreignKeys } = getTableConfig(events);
 
-	test("applicationId は applications.id への外部キー（削除時cascade）", () => {
-		const fk = firstForeignKey(foreignKeys);
+	test("applicationId + userId の複合外部キーで applications を参照する（削除時cascade）", () => {
+		const fk = findForeignKeyTo(foreignKeys, applications);
 		const ref = fk.reference();
 
-		expect(ref.foreignTable).toBe(applications);
-		expect(ref.columns.map((c) => c.name)).toEqual(["applicationId"]);
+		expect(ref.columns.map((c) => c.name)).toEqual(["applicationId", "userId"]);
+		expect(ref.foreignColumns.map((c) => c.name)).toEqual(["id", "userId"]);
 		expect(fk.onDelete).toBe("cascade");
 	});
 
@@ -169,17 +201,28 @@ describe("events テーブル", () => {
 			"scheduledAt",
 		]);
 	});
+
+	test("applicationId のインデックスを持つ（FK・cascade削除の検索性能のため）", () => {
+		const index = indexes.find(
+			(i) => i.config.name === "events_application_id_idx",
+		);
+
+		expect(index).toBeDefined();
+		expect(index?.config.columns.map((c) => (c as AnyPgColumn).name)).toEqual([
+			"applicationId",
+		]);
+	});
 });
 
 describe("documents テーブル", () => {
-	const { columns, foreignKeys } = getTableConfig(documents);
+	const { columns, indexes, foreignKeys } = getTableConfig(documents);
 
-	test("applicationId は applications.id への外部キー（削除時cascade）", () => {
-		const fk = firstForeignKey(foreignKeys);
+	test("applicationId + userId の複合外部キーで applications を参照する（削除時cascade）", () => {
+		const fk = findForeignKeyTo(foreignKeys, applications);
 		const ref = fk.reference();
 
-		expect(ref.foreignTable).toBe(applications);
-		expect(ref.columns.map((c) => c.name)).toEqual(["applicationId"]);
+		expect(ref.columns.map((c) => c.name)).toEqual(["applicationId", "userId"]);
+		expect(ref.foreignColumns.map((c) => c.name)).toEqual(["id", "userId"]);
 		expect(fk.onDelete).toBe("cascade");
 	});
 
@@ -191,5 +234,16 @@ describe("documents テーブル", () => {
 	test("content / fileUrl は NULL 許容", () => {
 		expect(findColumn(columns, "content").notNull).toBe(false);
 		expect(findColumn(columns, "fileUrl").notNull).toBe(false);
+	});
+
+	test("applicationId のインデックスを持つ（FK・cascade削除の検索性能のため）", () => {
+		const index = indexes.find(
+			(i) => i.config.name === "documents_application_id_idx",
+		);
+
+		expect(index).toBeDefined();
+		expect(index?.config.columns.map((c) => (c as AnyPgColumn).name)).toEqual([
+			"applicationId",
+		]);
 	});
 });
